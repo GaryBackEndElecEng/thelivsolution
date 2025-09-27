@@ -1,12 +1,15 @@
 package com.navinSecurity.thirdSecJWT.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -14,17 +17,30 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Double totalAmount=0.0;
-    @OneToOne
-    @JsonManagedReference
+    private Double totalAmountWithTax=0.0;
+    private Date created;
+    private Date purchased;
+    private String confirmation;
+    private String summary;
+    @ManyToOne
     @JoinColumn(name = "user_id") // Foreign key column in Cart table
+    @JsonBackReference("cart")
     private User user;
     @OneToMany(mappedBy="cart",cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonManagedReference("cartItem")
     private Set<CartItem> cartItems;
+
+
+    @PrePersist
+    private void onCreated(){
+        this.created=new Date();
+    }
 
     public void addItem(CartItem item){
         this.cartItems.add(item);
@@ -41,43 +57,10 @@ public class Cart {
 //        System.out.println("AFTER: totalAmount: " + this.totalAmount);
     };
 
-    public void removeCardItem(CartItem cartItem){
-        this.cartItems.stream().filter(_cartItem->_cartItem.getId().equals(cartItem.getId()))
-                .findFirst()
-                .ifPresent(_cartItem->this.cartItems.remove(_cartItem));
-    }
 
-    public void removeProdServItem(CartItem item){
-        this.cartItems.stream()
-                .filter(_item -> _item.getId().equals(item.getId()))
-                .findFirst().ifPresent(cartItem -> this.cartItems.remove(item));
-    };
-    public void removeProdItem(Product prod){
-        this.cartItems.stream()
-                .filter(_item->_item.getProduct().equals(prod))
-                .findFirst().ifPresent(cartItem->{
-                    cartItem.setProduct(null);
-                });
-    };
-    public void removeServItem(ServiceMod servItem){
-        this.cartItems.stream()
-                .filter(_item->_item.getServiceMod().getId().equals(servItem.getId()))
-                .findFirst().ifPresent(cartItem->{
-                    cartItem.setServiceMod(null);
-                });
-    }
-    public void addServItem(ServiceMod servItem){
-        this.cartItems.stream()
-                .filter(cartItem->cartItem.getServiceMod().getId().equals(servItem.getId()))
-                .findFirst().ifPresent(cartItem->cartItem.setServiceMod(servItem));
-    }
 
-    public void addProdItem(Product product){
-        this.cartItems.stream()
-                .filter(cartItem->cartItem.getProduct().getProdId().equals(product.getProdId()))
-                .findFirst()
-                .ifPresent(cartItem->cartItem.setProduct(product));
-    }
+
+
 }
 
 

@@ -6,13 +6,17 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.antlr.v4.runtime.Token;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.net.http.HttpHeaders;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -89,6 +93,16 @@ public class JwtService {
                 .verifyWith(getKey(secretKey))
                 .build().parseSignedClaims(token).getPayload();
     }
+
+    public String invalidateTokenClear(HttpServletRequest request,HttpServletResponse response){
+        removeTokenToHeader(response);
+        SecurityContextHolder.clearContext();
+        return "logout";
+    };
+
+    public void removeTokenToHeader(HttpServletResponse response){
+        response.setHeader("Authentication","");
+    };
 
 
 }

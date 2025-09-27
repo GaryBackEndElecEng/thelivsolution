@@ -1,9 +1,13 @@
 package com.navinSecurity.thirdSecJWT.dto;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class LoginDto {
     private String email;
     private String password;
+    private Boolean updates;
 }

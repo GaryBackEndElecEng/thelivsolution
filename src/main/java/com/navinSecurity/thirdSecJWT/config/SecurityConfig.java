@@ -29,11 +29,13 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity(debug=true) //I WANT TO CONTROL THE FLOW
-@EnableMethodSecurity(jsr250Enabled = true)
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Value("${frontend}")
     String frontend;
+    @Value("${frontendTwo}")
+    String frontendTwo;
 
     @Autowired
     MyUserDetailsService userDetailsService;
@@ -75,10 +77,10 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(frontend,"http://localhost:9090"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedOrigins(List.of(frontend,"http://localhost:4200","http://localhost:9090"));
+        configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(List.of("Content-Type", "Credentials"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

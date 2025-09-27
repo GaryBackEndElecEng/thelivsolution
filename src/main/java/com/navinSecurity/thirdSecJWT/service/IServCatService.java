@@ -8,8 +8,10 @@ import java.util.List;
 public interface IServCatService {
     List<ServiceCategory> getAllCategory();
     ServiceCategory findByName(String name);
-    String deleteCategory(Long categoryId);
+
+    Long deleteCategory(Long user_id, Long categoryId);
+
     ServiceCategory updateCategory(ServiceCategory category);
     ServiceCategory findById(Long categoryId);
-    ServiceCategory post(ServiceCategory servCat);
+    ServiceCategory post(ServiceCategory servCat,Long user_id);
 }

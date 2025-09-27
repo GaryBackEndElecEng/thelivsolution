@@ -1,12 +1,15 @@
 package com.navinSecurity.thirdSecJWT.service;
 
-import com.navinSecurity.thirdSecJWT.model.Product;
-import com.navinSecurity.thirdSecJWT.model.ProductCategory;
+import com.navinSecurity.thirdSecJWT.dto.ProductDtoCreate;
+import com.navinSecurity.thirdSecJWT.model.*;
 import com.navinSecurity.thirdSecJWT.repo.ProdCategoryRepo;
+import com.navinSecurity.thirdSecJWT.repo.ProductRepo;
+import com.navinSecurity.thirdSecJWT.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +20,10 @@ public class ProdCatService implements IProdCatService {
 
     @Autowired
     private final ProdCategoryRepo prodCategoryRepo;
+    @Autowired
+    private final UserRepo userRepo;
+    @Autowired
+    private ProductRepo productRepo;
 
 
     @Override
@@ -36,23 +43,34 @@ public class ProdCatService implements IProdCatService {
     };
 
     @Override
-    public String deleteCategory(Long categoryId) {
+    public Long deleteCategory(Long user_id,Long categoryId) {
         Optional<ProductCategory> option=prodCategoryRepo.findById(categoryId);
-        if(option.isPresent()){
-            prodCategoryRepo.delete(option.get());
-            return "productCategory: " + categoryId;
+        if(isUser(user_id)){
+            if(option.isPresent()){
+                prodCategoryRepo.delete(option.get());
+                return categoryId;
+            }else{
+                throw new RuntimeException("not deleted");
+            }
+
         }else{
-            return " product category was not deleted";
+            throw new RuntimeException("no User Found, forbidden");
         }
     };
 
     @Override
-    public ProductCategory updateCategory(ProductCategory category) {
+    public ProductCategory updateCategory(ProductCategory category,Long user_id) {
         Optional<ProductCategory> option=prodCategoryRepo.findById(category.getId());
-        if(option.isPresent()){
-            return prodCategoryRepo.save(category);
+        if(isUser(user_id)){
+            if(option.isPresent()){
+                return prodCategoryRepo.save(category);
+            }else{
+                throw new RuntimeException(" Product Category was not updated");
+            }
+
         }else{
-            throw new RuntimeException(" Product Category was not updated");
+            RuntimePermission notAllowed = new RuntimePermission(" not allowed");
+            throw new RuntimeException(String.valueOf(notAllowed));
         }
     };
 
@@ -68,15 +86,53 @@ public class ProdCatService implements IProdCatService {
     }
 
     @Override
-    public ProductCategory post(ProductCategory prodCat) {
-        List<Product>posts=new ArrayList<>();
-        final boolean isPost_added = posts.addAll(prodCat.getProducts());
-        if (!isPost_added) {
-            prodCat.setProducts(posts);
+    public ProductCategory post(ProdCatDto prodCat, Long user_id) {
+        Optional<ProductCategory> option=prodCategoryRepo.findByName(prodCat.getName());
+        if(isUser(user_id) && option.isEmpty()){
+            ProductCategory convertProd=prodCat.prodcatDtoToProductCategory(prodCat);
+            return attachNewProductsToNewCategoryAndSave(convertProd);
+
+        }else{
+            RuntimePermission notAllowed = new RuntimePermission(" not allowed");
+            throw new RuntimeException(String.valueOf(notAllowed));
         }
-        return prodCategoryRepo.save(prodCat);
 
     };
+
+    public Boolean isUser(Long user_id){
+        Optional<User> isUser=userRepo.findById(user_id);
+        return isUser.isPresent();
+    }
+
+    public List<Product> setProductsToProdcat(ProductCategory prodCat,List<Product> products){
+        List<Product> newProds=new ArrayList<>();
+        for (Product prod : products) {
+            prod.setProductCategory(prodCat);
+            prod.setCat(prodCat.getName());
+            ProductDtoCreate newProd = new ProductDtoCreate(prod);
+            Product newerProd=new Product(newProd);
+            Product retProd = productRepo.save(newerProd);
+            newProds.add(retProd);
+        }
+        return newProds;
+    }
+    public ProductCategory attachNewProductsToNewCategoryAndSave(ProductCategory prodCat){
+        ProductCategory newServCat=new ProductCategory(prodCat.getName());
+        ProductCategory savedServCat=prodCategoryRepo.save(newServCat);
+        if(!prodCat.getProducts().isEmpty()){
+            for(Product product :prodCat.getProducts()){
+                Product newServ=new Product();
+                newServ.convertProd(product);
+                Product retServ=productRepo.save(newServ);
+                retServ.setProductCategory(savedServCat);
+                retServ.setCat(savedServCat.getName());
+                savedServCat.getProducts().add(retServ);
+                productRepo.save(newServ);
+            }
+        }
+
+        return prodCategoryRepo.save(savedServCat);
+    }
 
 
 };

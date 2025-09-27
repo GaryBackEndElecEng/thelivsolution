@@ -16,8 +16,6 @@ public class PublicUser {
     private String first;
     private String last;
     private String email;
-    @Enumerated(EnumType.STRING)
-    private Role role;
 
     public PublicUser convert(User user){
         return PublicUser.builder()
@@ -26,7 +24,6 @@ public class PublicUser {
                 .first(user.getFirst())
                 .last(user.getLast())
                 .email(user.getEmail())
-                .role(user.getRole())
                 .build();
     }
 }

@@ -1,10 +1,13 @@
 package com.navinSecurity.thirdSecJWT.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.navinSecurity.thirdSecJWT.dto.UserResponse;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -21,45 +24,23 @@ public class User {
     private String last;
     private String email;
     private String password;
+    private Boolean updates;
     @Enumerated(EnumType.STRING)
     private Role role;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("cart")
+    private Set<Cart> carts;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    private Cart cart;
+    @JsonManagedReference("address")
+    private Address address;
+    @OneToOne(mappedBy = "user")
+    @JsonBackReference("affiliate-user")
+    private Affiliate affiliate;
 
 
-
-
-    public User(
-            String first,
-            String last,
-            String email,
-            String password,
-            Role role,
-            List<Product> products
-        ) {
-        this.first=first;
-        this.last= last;
-        this.email=email;
-        this.password=password;
-        this.role=role;
-
-
-    };
-
-
-    public User(User user){
-        this.user_id=user.getUser_id();
-        this.first=user.getFirst();
-        this.last= user.getLast();
-        this.email=user.getEmail();
-        this.password=user.getPassword();
-        this.role=user.getRole();
-
-    }
     public User convertUser(User user){
         Role newRole;
-        newRole = Role.valueOf("USER");
+        newRole = Role.valueOf("ROLE_USER");
         return User.builder()
                 .user_id(user.getUser_id())
                 .first(user.getFirst())
@@ -67,17 +48,23 @@ public class User {
                 .password(user.getPassword())
                 .email(user.getEmail())
                 .role(newRole)
+                .updates(user.getUpdates())
+                .carts(user.getCarts())
+                .address(user.getAddress())
                 .build();
     }
     public User convertAdmin(User user){
         Role newRole;
-        newRole = Role.valueOf("ADMIN");
+        newRole = Role.valueOf("ROLE_ADMIN");
         return User.builder()
                 .user_id(user.getUser_id())
                 .first(user.getFirst())
                 .last(user.getLast())
                 .password(user.getPassword())
                 .role(newRole)
+                .updates(user.getUpdates())
+                .carts(user.getCarts())
+                .address(user.getAddress())
                 .build();
     }
     public User changePassword(User user,String hash){
@@ -87,6 +74,21 @@ public class User {
                 .last(user.getLast())
                 .password(hash)
                 .role(user.getRole())
+                .updates(user.getUpdates())
+                .carts(user.getCarts())
+                .address(user.getAddress())
+                .build();
+    }
+    public UserResponse convert(User user){
+        return UserResponse.builder()
+                .user_id(user.getUser_id())
+                .email(user.getEmail())
+                .first(user.getFirst())
+                .last(user.getLast())
+                .role(user.getRole())
+                .updates(user.getUpdates())
+                .carts(user.getCarts())
+                .address(user.getAddress())
                 .build();
     }
 

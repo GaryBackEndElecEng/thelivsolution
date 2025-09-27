@@ -40,8 +40,8 @@ public class ServCatController {
         }
     };
 
-    @PutMapping("/update")
-    public ResponseEntity<ResponseApi> updateCategory(@RequestBody ServiceCategory prodCat){
+    @PostMapping("/update/{user_id}")
+    public ResponseEntity<ResponseApi> updateCategory(@RequestBody ServiceCategory prodCat,@PathVariable(name="user_id") Long user_id){
         try {
             ServiceCategory retProdCat=servCatService.updateCategory(prodCat);
             return ResponseEntity.ok().body(new ResponseApi(retProdCat,"success"));
@@ -50,10 +50,10 @@ public class ServCatController {
         }
     };
 
-    @PostMapping("/post")
-    public ResponseEntity<ResponseApi> postCategory(@RequestBody ServiceCategory prodCat){
+    @PostMapping("/post/{user_id}")
+    public ResponseEntity<ResponseApi> postCategory(@RequestBody ServiceCategory prodCat,@PathVariable(name="user_id") Long user_id){
         try {
-            ServiceCategory retProdCat=servCatService.post(prodCat);
+            ServiceCategory retProdCat=servCatService.post(prodCat,user_id);
             return ResponseEntity.ok().body(new ResponseApi(retProdCat,"success"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseApi(e.getMessage(),"failed"));
@@ -67,6 +67,18 @@ public class ServCatController {
             return ResponseEntity.ok().body(new ResponseApi(prodCat,"success"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseApi(e.getMessage(),"failed"));
+        }
+    };
+    @DeleteMapping("/delete/{user_id}/{id}")
+    public ResponseEntity<ResponseApi> deleteProdCat(
+            @PathVariable(name="user_id") Long user_id,
+            @PathVariable(name="id") Long id
+    ){
+        try {
+            Long prodCatId=servCatService.deleteCategory(user_id,id);
+            return ResponseEntity.ok().body(new ResponseApi(prodCatId,"success"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseApi(e.getMessage(),"failed"));
         }
     };
 

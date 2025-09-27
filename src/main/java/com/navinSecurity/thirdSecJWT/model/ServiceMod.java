@@ -20,29 +20,44 @@ public class ServiceMod {
     private Long id;
     private String name;
     private String cat;
+    @Column(columnDefinition = "TEXT",length=1000)
     private String description;
     private String image;
     private Date created;
     private Double price;
     @ManyToOne
-    @JoinColumn(name="user_id")
-    private User user;
-    @ManyToOne
     @JoinColumn(name="serviceCategory_id")
-    @JsonBackReference
+    @JsonBackReference("serviceCategory-serviceMod")
     private ServiceCategory serviceCategory;
+    @ManyToOne
+    @JoinColumn(name="affiliate_id")
+    @JsonBackReference("affiliate-serviceMod")
+    private Affiliate affiliate;
 
     @PrePersist
     protected void onCreate(){
         this.created=new Date();
     }
 
-    public ServiceMod convert(ServiceDtoCreate servDto){
+    public ServiceMod convert(ServiceDtoCreate servDto,ServiceCategory servCat){
         return ServiceMod.builder()
                 .name(servDto.getName())
                 .cat(servDto.getCat())
-                .description(servDto.getDesc())
+                .description(servDto.getDescription())
                 .image(servDto.getImage())
+                .price(servDto.getPrice())
+                .serviceCategory(servCat)
+                .build();
+    }
+    public ServiceMod convertServMod(ServiceMod servMod){
+        return ServiceMod.builder()
+                .name(servMod.getName())
+                .cat(servMod.getCat())
+                .description(servMod.getDescription())
+                .image(servMod.getImage())
+                .created(new Date())
+                .price(servMod.getPrice())
+                .serviceCategory(servMod.getServiceCategory())
                 .build();
     }
 }

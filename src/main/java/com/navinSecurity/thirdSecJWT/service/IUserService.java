@@ -8,7 +8,9 @@ import com.navinSecurity.thirdSecJWT.model.User;
 import java.util.List;
 
 public interface IUserService {
-    List<User> getUsers();
+    List<User> getAdminUsers(Long user_id);
+
+    List<PublicUser> getSafeUsers();
 
     User getUserByFirst(String first);
 
@@ -18,9 +20,13 @@ public interface IUserService {
 
     User registerUser(User user);
 
-    User registerAdmin(User user);
+    User registerAdmin(User user,Long user_id);
 
     UserResponse logIn(LoginDto loginDto);
 
-    PublicUser changePassword(User user, String password);
+    UserResponse changePassword(Long user_id, String oldPassword,String newPassword);
+
+    Long deleteUser(Long ownerId,Long user_id);
+
+    UserResponse adminPostNewUser(User user,Long owner_id);
 }

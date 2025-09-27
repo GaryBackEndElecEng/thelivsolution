@@ -1,5 +1,6 @@
 package com.navinSecurity.thirdSecJWT.controller;
 
+import com.navinSecurity.thirdSecJWT.dto.ServiceDtoCreate;
 import com.navinSecurity.thirdSecJWT.model.Product;
 import com.navinSecurity.thirdSecJWT.model.ServiceMod;
 import com.navinSecurity.thirdSecJWT.response.ResponseApi;
@@ -20,20 +21,34 @@ public class ServiceController {
     @Autowired
     private final ServService servService;
 
-    @PostMapping("/post")
-    public ResponseEntity<ResponseApi> addService(@RequestBody ServiceMod service){
+    @PostMapping("/post/{user_id}/{id}")
+    public ResponseEntity<ResponseApi> addService(
+            @RequestBody ServiceDtoCreate serviceDto,
+            @PathVariable(name="user_id") Long user_id,
+            @PathVariable(name="id") Long id
+    ){
         try {
-            ServiceMod _serv=servService.saveService(service);
+
+            ServiceMod _serv=servService.saveService(serviceDto,user_id,id);
             return ResponseEntity.ok().body(new ResponseApi(_serv,"success"));
         } catch (Exception e) {
             return  new ResponseEntity<>(new ResponseApi(e.getMessage(),"failed"), HttpStatus.BAD_REQUEST);
         }
     };
-    @PostMapping("/update")
-    public ResponseEntity<ResponseApi> updateService(@RequestBody ServiceMod service){
+    @PostMapping("/update/{user_id}")
+    public ResponseEntity<ResponseApi> updateService(@RequestBody ServiceMod service,@PathVariable Long user_id){
         try {
-            ServiceMod _prod=servService.updateService(service);
+            ServiceMod _prod=servService.updateService(service,user_id);
             return ResponseEntity.ok().body(new ResponseApi(_prod,"success"));
+        } catch (Exception e) {
+            return  new ResponseEntity<>(new ResponseApi(e.getMessage(),"failed"), HttpStatus.BAD_REQUEST);
+        }
+    }
+    @DeleteMapping("/delete/{user_id}/{servId}")
+    public ResponseEntity<ResponseApi> deleteService(@PathVariable(name="servId") Long servId,@PathVariable(name="user_id") Long user_id){
+        try {
+            String _msg=servService.deleteService(servId,user_id);
+            return ResponseEntity.ok().body(new ResponseApi(_msg,"success"));
         } catch (Exception e) {
             return  new ResponseEntity<>(new ResponseApi(e.getMessage(),"failed"), HttpStatus.BAD_REQUEST);
         }

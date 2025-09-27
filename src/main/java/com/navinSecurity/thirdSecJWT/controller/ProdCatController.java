@@ -1,5 +1,6 @@
 package com.navinSecurity.thirdSecJWT.controller;
 
+import com.navinSecurity.thirdSecJWT.model.ProdCatDto;
 import com.navinSecurity.thirdSecJWT.model.ProductCategory;
 import com.navinSecurity.thirdSecJWT.response.ResponseApi;
 import com.navinSecurity.thirdSecJWT.service.ProdCatService;
@@ -36,27 +37,27 @@ public class ProdCatController {
             ProductCategory prodCat=prodCatService.findByName(name);
             return ResponseEntity.ok().body(new ResponseApi(prodCat,"success"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseApi(e.getMessage(),"failed"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseApi(e.getMessage(),"failed"));
         }
     };
 
-    @PutMapping("/update")
-    public ResponseEntity<ResponseApi> updateCategory(@RequestBody ProductCategory prodCat){
+    @PostMapping("/update/{user_id}")
+    public ResponseEntity<ResponseApi> updateCategory(@RequestBody ProductCategory prodCat, @PathVariable(name="user_id") Long user_id){
         try {
-            ProductCategory retProdCat=prodCatService.updateCategory(prodCat);
+            ProductCategory retProdCat=prodCatService.updateCategory(prodCat,user_id);
             return ResponseEntity.ok().body(new ResponseApi(retProdCat,"success"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseApi(e.getMessage(),"failed"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseApi(e.getMessage(),"failed"));
         }
     };
 
-    @PostMapping("/post")
-    public ResponseEntity<ResponseApi> postCategory(@RequestBody ProductCategory prodCat){
+    @PostMapping("/post/{user_id}")
+    public ResponseEntity<ResponseApi> postCategory(@RequestBody ProdCatDto prodCat,@PathVariable(name="user_id") Long user_id){
         try {
-            ProductCategory retProdCat=prodCatService.post(prodCat);
+            ProductCategory retProdCat=prodCatService.post(prodCat,user_id);
             return ResponseEntity.ok().body(new ResponseApi(retProdCat,"success"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseApi(e.getMessage(),"failed"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseApi(e.getMessage(),"failed"));
         }
     };
 
@@ -66,7 +67,19 @@ public class ProdCatController {
             ProductCategory prodCat=prodCatService.findById(id);
             return ResponseEntity.ok().body(new ResponseApi(prodCat,"success"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseApi(e.getMessage(),"failed"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseApi(e.getMessage(),"failed"));
+        }
+    };
+    @DeleteMapping("/delete/{user_id}/{id}")
+    public ResponseEntity<ResponseApi> deleteProdCat(
+            @PathVariable(name="user_id") Long user_id,
+            @PathVariable(name="id") Long id
+    ){
+        try {
+            Long prodCatId=prodCatService.deleteCategory(user_id,id);
+            return ResponseEntity.ok().body(new ResponseApi(prodCatId,"success"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseApi(e.getMessage(),"failed"));
         }
     };
 
